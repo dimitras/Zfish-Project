@@ -1,4 +1,5 @@
-#require 'fap'
+require 'rubygems'
+require 'bio'
 
 class Mrna
 	attr_accessor :name, :chrom, :strand, :start, :stop, :cds_start, :cds_stop, :exon_count, :exon_starts, :exon_stops, :genename, :product, :accno, :prot_accno, :coding
@@ -27,15 +28,15 @@ class Mrna
 		end
 	end
 	
-	def cds_to_fasta(fap)
+	def cds_to_fasta(genome_fap)
 		cds_seq = ''
-		entry = fap.entry_by_id(@chrom)
-		puts ">> found genome seq: " + entry.to_s
 		for i in 0..self.cds_exon_starts.length-1
-			cds_seq << entry.seq[self.cds_exon_starts[i]..self.cds_exon_stops[i]]
+			cds_seq = cds_seq + genome_fap.region_seq(@chrom, self.cds_exon_starts[i], self.cds_exon_stops[i])
+			if @strand == "-"
+				cds_seq = cds_seq.complement
+			end
 		end
-		puts ">> found mrna cds seq: " + cds_seq.to_s
-		return cds_seq
+		return ">" + @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")\n" + cds_seq.to_s
 	end
 
 	def cds_to_bed()
