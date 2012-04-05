@@ -36,7 +36,23 @@ class Mrna
 				cds_seq = cds_seq.complement
 			end
 		end
-		return ">" + @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")\n" + cds_seq.to_s
+		return cds_seq # ">" + @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")\n" + cds_seq.to_s
+	end
+
+	def cds_to_protein(genome_fap)
+		mrna_seq = Bio::Sequence::NA.new(cds_to_fasta(genome_fap))
+		protein = mrna_seq.translate
+		header = @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")"
+		return protein.to_fasta(header, 60)
+	end
+
+	def cds_to_mrnarefseq()
+		header = @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")"
+		for i in 0..@exon_stops.length-1
+			@exon_stops[i] = @exon_stops[i] + 1
+		end
+		entry = [header, @chrom, @strand, @start, @stop + 1, @cds_start, @cds_stop + 1, @exon_starts.length, @exon_starts.join(","), @exon_stops.join(","), @genename, @product, @accno, header].join("\t")
+		return entry
 	end
 
 	def cds_to_bed()
@@ -70,7 +86,7 @@ class Mrna
 		if @coding
 			cdseq_length = 0
 			for i in 0..self.cds_exon_starts.length-1
-				cdseq_length += @cds_exon_stops[i] - @cds_exon_starts[i] + 1
+				cdseq_length += self.cds_exon_stops[i] - self.cds_exon_starts[i] + 1
 			end
 			return cdseq_length
 		else
