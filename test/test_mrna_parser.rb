@@ -4,7 +4,8 @@ require "test/unit"
 class TestMrnaParser < Test::Unit::TestCase
  	
 	def setup
-		@mrnap = MrnaParser.open("../data/zfish_data/ucsc_mrnas.txt")
+		@mrnap = MrnaParser.open("../data/ucsc_mrnas.txt")
+		@mrnap.each do |entry|  end
 	end
 
 	def test_mrnafile
@@ -16,6 +17,10 @@ class TestMrnaParser < Test::Unit::TestCase
 		assert_equal("+", @mrnap.mrna("NP_571501").strand)
 		assert_equal("50322024 50323684 50327722 50376641 50384688 50384995 50387281 50388021 50392530 50393547", @mrnap.mrna("NP_571501").cds_exon_starts.join(" "))
 		assert_equal("50322230 50323750 50327849 50376773 50384781 50385108 50387443 50388128 50392578 50393581", @mrnap.mrna("NP_571501").cds_exon_stops.join(" "))
+	end
+
+	def test_count
+		assert_equal(15561, @mrnap.count())
 	end
 
 	def test_line_parse

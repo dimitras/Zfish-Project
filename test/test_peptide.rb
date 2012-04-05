@@ -21,6 +21,7 @@ class TestPeptide < Test::Unit::TestCase
 		assert_equal("NP_001032499", @peptide.prot_acc)
 		@peptide.genomic_locations
 		assert_equal(30448681, @peptide.genomic_starts.first)
+		assert_equal(5, @peptide.length)
 	end
 	
 	def test_to_bed
