@@ -7,7 +7,8 @@ class MrnaParser
 		@filename = filename
 		@filehandle = File.new(filename) #if filename
 		@index = {}
-		create_index
+		@index_by_prot_accno = {}
+		create_indexes
 		@count = 0
 	end
 
@@ -17,7 +18,7 @@ class MrnaParser
 		
 	def self.open(filename)
 		mrnap = MrnaParser.new(filename)
-		if block_given? # call it with a block and not with each()
+		if block_given?
 			mrnap.each do |mrna|
 				yield mrna
 			end
@@ -33,20 +34,37 @@ class MrnaParser
 		end
 	end
 	
-	def create_index()
+	def create_indexes()
 		@filehandle.readline # skip first line which is the header
 		temp_pos = @filehandle.pos
 		@filehandle.each do |line|
-			prot_accno = line.split("\t")[13].chomp
-			@index[prot_accno.to_s] = @filehandle.pos - line.length
+			line_length = line.length
+			(name,chrom,strand,start,stop,cds_start,cds_stop,exon_count,exon_starts_str,exon_stops_str,genename,product,accno,prot_accno) = line.chomp!.split("\t")
+# 			if @index_by_prot_accno.has_key?(prot_accno.to_s)
+# 				puts prot_accno.to_s + "\t" + cds_start.to_s + "\t" + cds_stop.to_s 
+# 			end
+			@index[accno.to_s] = @filehandle.pos - line_length
+			@index_by_prot_accno[prot_accno.to_s] = @filehandle.pos - line_length
+			
 		end
 		@filehandle.pos = temp_pos
 	end
-	
+
 	def mrna(accno)
 		@filehandle.pos = @index[accno]		
 		line = @filehandle.readline.chomp
 		return line_parse(line)
+	end
+	
+	def mrna_by_prot_accno(accno)
+		pos = @index_by_prot_accno[accno.to_s]
+		if pos == nil
+			return nil
+		else 
+			@filehandle.pos = pos
+			line = @filehandle.readline.chomp
+			return line_parse(line)
+		end
 	end
 	
 	def line_parse(line)
@@ -61,15 +79,3 @@ class MrnaParser
 	
 end
 
-# 
-# mrnap = MrnaParser.open(ARGV[0])
-# mrnap.each do |mrna|
-# 	mrna.create_cds_exons
-# 	mrna.cds_length
-# 	puts "name:" + "\t" + mrna.name + "\t" + "protein:" + "\t" + mrna.prot_accno.to_s + "\t" + mrna.cds_length.to_s
-# end
-# puts "===> NP_991214"
-# puts "cds length: " + mrnap.mrna("NP_991214").cds_length.to_s
-# puts "exons\t" + mrnap.mrna("NP_991214").exon_starts.join(" ").to_s + "\t" + mrnap.mrna("NP_991214").exon_stops.join(" ").to_s
-# puts "cds exons\t" + mrnap.mrna("NP_991214").cds_exon_starts.join(" ").to_s + "\tAND\t" + mrnap.mrna("NP_991214").cds_exon_stops.join(" ").to_s
-# puts "<=== NP_991214"

@@ -29,10 +29,11 @@ class PeptideParser
 	end
 
 	def line_parse(line)
-		(prot_acc, peptide, start, stop, multiplicity) = line.split("\t")
-		return Peptide.new(prot_acc.to_s, peptide, start, stop, multiplicity)
+		(prot_acc, peptide, start, stop, multiplicity, score) = line.split("\t")
+		return Peptide.new(prot_acc.to_s, peptide, start, stop, multiplicity, score)
 	end
 
+	# this is wrong!
 	def create_index()
 		temp_pos = @filehandle.pos
 		@filehandle.each do |line|
@@ -50,12 +51,3 @@ class PeptideParser
 
 end
 
-
-# mrnap = MrnaParser.open(ARGV[0])
-# peptidep = PeptideParser.open(ARGV[1])
-# bep = File.open(ARGV[2],"w")
-
-# peptidep.each do |peptide|
-#  	peptide.mrna = mrnap.mrna(peptide.prot_acc)
-#  	bep.puts peptide.to_bed()
-# end

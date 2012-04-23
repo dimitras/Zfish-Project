@@ -28,33 +28,46 @@ class Mrna
 		end
 	end
 	
-	def cds_to_fasta(genome_fap)
-		cds_seq = ''
+	def cds_seq_from_genome(genome_fap)
+		cds_seq = Bio::Sequence::NA.new("")
 		for i in 0..self.cds_exon_starts.length-1
 			cds_seq = cds_seq + genome_fap.region_seq(@chrom, self.cds_exon_starts[i], self.cds_exon_stops[i])
 			if @strand == "-"
 				cds_seq = cds_seq.complement
 			end
 		end
-		return cds_seq # ">" + @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")\n" + cds_seq.to_s
+		return cds_seq
+	end
+	
+	def cds_to_fasta(genome_fap)
+		cds_seq = cds_seq_from_genome(genome_fap)
+		return ">" + @name.to_s + "\n" + cds_seq
 	end
 
 	def cds_to_protein(genome_fap)
-		mrna_seq = Bio::Sequence::NA.new(cds_to_fasta(genome_fap))
+		mrna_seq = Bio::Sequence::NA.new(cds_seq_from_genome(genome_fap))
 		protein = mrna_seq.translate
-		header = @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")"
-		return protein.to_fasta(header, 60)
+		return protein.to_fasta(@name, 50)
 	end
 
-	def cds_to_mrnarefseq()
-		header = @name.to_s + "|" + @chrom.to_s + "(" + @strand.to_s + ")"
-		for i in 0..@exon_stops.length-1
-			@exon_stops[i] = @exon_stops[i] + 1
+	def cds_to_lineformat()
+		exon_stops_incremented = []
+		for i in 0..@cds_exon_stops.length-1
+			exon_stops_incremented[i] = @cds_exon_stops[i] + 1
 		end
-		entry = [header, @chrom, @strand, @start, @stop + 1, @cds_start, @cds_stop + 1, @exon_starts.length, @exon_starts.join(","), @exon_stops.join(","), @genename, @product, @accno, header].join("\t")
+		entry = [@name, @chrom, @strand, @cds_start, @cds_stop + 1, @cds_start, @cds_stop + 1, @cds_exon_starts.length, @cds_exon_starts.join(","), exon_stops_incremented.join(","), @genename, @product, @accno, @name].join("\t")
 		return entry
 	end
 
+	def to_lineformat()
+		exon_stops_incremented = []
+		for i in 0..@exon_stops.length-1
+			exon_stops_incremented[i] = @exon_stops[i] + 1
+		end
+		entry = [@name, @chrom, @strand, @start, @stop + 1, @cds_start, @cds_stop + 1, @exon_starts.length, @exon_starts.join(","), exon_stops_incremented.join(","), @genename, @product, @accno, @prot_accno].join("\t")
+		return entry
+	end
+	
 	def cds_to_bed()
 		rgb = "0,255,0"
 		if @strand == "-" then
@@ -74,7 +87,6 @@ class Mrna
 
 	def exon_index(genomic_position) # from junction genomic region
 		for i in 0..@exon_starts.length-1
-			# puts "check...\t" + genomic_position.to_s + "\t in \t" + exon_starts[i].to_s + "\t" + exon_stops[i].to_s
 			if @exon_starts[i] <= genomic_position && genomic_position <= @exon_stops[i]
 				return i # return the index of the exons array
 			end
@@ -104,7 +116,6 @@ class Mrna
 		if @cds_exon_starts.length == 0
 			create_cds_exons
 		end
-		# puts ":: " + @prot_accno + ">>>>> cds_exon_starts\t" + @cds_exon_starts.join(" ").to_s
 		return @cds_exon_starts
 	end
 	
@@ -112,7 +123,6 @@ class Mrna
 		if @cds_exon_stops.length == 0
 			create_cds_exons
 		end
-		# puts ":: " + @prot_accno + ">>>>> cds_exon_stops\t" + @cds_exon_stops.join(" ").to_s
 		return @cds_exon_stops
 	end
 	

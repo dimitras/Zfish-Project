@@ -102,7 +102,7 @@ class Entry
 	attr_accessor :header, :seq
 
 	def initialize(header, seq)
-	       @header = header.split('.')[0]
+	       @header = header
 	       @seq = seq
 	end
 
@@ -110,27 +110,3 @@ class Entry
 		return seq.length
 	end
 end
-
-### run with block ###
-#FastaParser.open(ARGV[0]) do |entry|
-#          puts "header:" + entry.header
-#          puts "seq:" + entry.seq + "\n"
-#end
-
-### run with each() ###
-# fp = FastaParser.open(ARGV[0])
-# fp.each do |entry|
-# 	puts entry.header + "\t" + entry.length.to_s + "\t" + fp.entry_by_id(entry.header).header
-# end
-
-# ### extra functions ###
-
-# accnum = "NP_001103992"
-# puts fp.entry_by_id(accnum).header
-
-# puts "COUNT: " + fp.count.to_s
-# puts "FIRST ENTRY: " + fp.first.header + "\n" + "\n" + fp.first.seq
-# puts "LAST ENTRY: " + fp.last.header + "\n" + "\n" + fp.last.seq
-
-# entryno = 2
-# puts "ENTRY#{entryno}: " + fp.entry(entryno).header + "\n" + fp.entry(entryno).seq

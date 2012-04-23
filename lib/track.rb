@@ -2,8 +2,6 @@ require 'mrna'
 require 'junction'
 
 class Track # a track is a collection of genomic regions
-	
-# 	attr_accessor :track_list
 
 	def initialize()
 		@track_list = {}
