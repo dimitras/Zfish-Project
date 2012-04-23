@@ -1,3 +1,7 @@
+# project still in progress 
+# documentation not still available
+
+
 # STEP 1: clean the raw db files
 ruby scripts/clean_files.rb data/mrnas_ucsc_lineformat.txt data/proteins_ucsc_db.fa data/danRer7.fa results/mrnas_ucsc_lineformat_clean.txt results/proteins_ucsc_db_clean.fa
 
@@ -18,5 +22,5 @@ cat results/mrnas_ucsc_lineformat_clean.txt > results/mrnas_full_db_lineformat.t
 grep -v "#" results/mrnas_unannotated_lineformat.txt >> results/mrnas_full_db_lineformat.txt
 cat results/proteins_ucsc_db_clean.fa results/proteins_unannotated.fa >> results/proteins_full_db.fa
 
-# STEP 6: find unexplained peptides with evidence
+# STEP 7: find unexplained peptides with evidence
 ruby scripts/find_unexplained_peptides.rb data/1d-16dec-zfish-full-db.dat results/mrnas_full_db_lineformat.txt results/unexplained_peptides_of_unannotated_proteins.bed results/unique_peptides_of_unannotated_proteins.bed results/nonunique_peptides_of_unannotated_proteins.bed
