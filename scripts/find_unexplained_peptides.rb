@@ -58,6 +58,9 @@ end
 
 unique_peps_for_unann_bed_output = File.open(unique_peptides_of_unannotated_proteins_bed_file,"w")
 nonunique_peps_for_unann_bed_output = File.open(multiple_peptides_of_unannotated_proteins_bed_file,"w")
+unique_peps_for_unann_bed_output.puts "track name=\"Unique Peptides on Unannotated Proteins\" description=\"Unique Peptides on Unannotated Proteins\" visibility=2 itemRgb=\"On\" useScore=1"
+nonunique_peps_for_unann_bed_output.puts "track name=\"Non-Unique Peptides on Unannotated Proteins\" description=\"Non-Unique Peptides on Unannotated Proteins\" visibility=2 itemRgb=\"On\" useScore=1"
+
 @peptides.rewind
 @peptides.each do |psm|
 	psm.proteins.each do |protein_info|
@@ -87,14 +90,10 @@ nonunique_peps_for_unann_bed_output.close
 
 
 unexplained_peptides_bed_output = File.open(unexplained_peptides_of_unannotated_proteins_bed_file,"w")
+unexplained_peptides_bed_output.puts "track name=\"Unexplained highest-scored Peptides on Unannotated Proteins\" description=\"Unexplained highest-scored Peptides on Unannotated Proteins\" visibility=2 itemRgb=\"On\" useScore=1"
 stronger_pep_for_unann.each_value do |peptide|
 	if !max_score_for_ann.has_key?(peptide) || (max_score_for_ann[peptide] < peptide.score)
 		unexplained_peptides_bed_output.puts peptide.to_bed
 	end	
 end
 unexplained_peptides_bed_output.close
-
-
-
-
-
