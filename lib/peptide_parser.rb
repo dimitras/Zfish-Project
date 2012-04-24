@@ -1,14 +1,15 @@
+require 'rubygems'
+require 'mascot/dat'
+require 'mascot/dat/peptides'
+require 'mascot/dat/psm'
 require 'peptide'
-# require 'mrna'
 
 class PeptideParser
-	attr_accessor :filename
-
 	def initialize(filename)
-		@filename = filename
-		@filehandle = File.new(filename)
+		@dat = Mascot::DAT.open(filename, true)
+		@peptides = @dat.peptides
 		@index = {}
-		create_index
+		create_index	
 	end
 	
 	def self.open(filename)
@@ -23,31 +24,37 @@ class PeptideParser
 	end
 
 	def each()
-		@filehandle.each do |line|
-			yield line_parse(line.chomp)
+		@peptides.each do |psm|
+			psm.proteins.each do |protein_info|
+				protein_accno = protein_info[0].split(".")[0]
+				start = protein_info[2]
+				stop = protein_info[3]
+				multiplicity = protein_info[4]
+				yield Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score)
+			end
 		end
 	end
 
-	def line_parse(line)
-		(prot_acc, peptide, start, stop, multiplicity, score) = line.split("\t")
-		return Peptide.new(prot_acc.to_s, peptide, start, stop, multiplicity, score)
-	end
-
-	# this is wrong!
 	def create_index()
-		temp_pos = @filehandle.pos
-		@filehandle.each do |line|
-			prot_acc = line.split("\t")[0].chomp
-			@index[prot_acc.to_s] = @filehandle.pos - line.length
+		@peptides.each do |psm|
+			psm.proteins.each do |protein_info|
+				protein_accno = protein_info[0].split(".")[0]
+				start = protein_info[2]
+				stop = protein_info[3]
+				multiplicity = protein_info[4]
+				peptide = Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score)
+				@index[protein_accno] = peptide
+			end
 		end
-		@filehandle.pos = temp_pos
-	end
-	
-	def peptide(accno)
-		@filehandle.pos = @index[accno]
-		line = @filehandle.readline.chomp
-		return line_parse(line)
+		rewind
 	end
 
+	def peptide(prot_acc)
+		peptide = @index[prot_acc]
+		return peptide
+	end
+
+	def rewind()
+		@peptides.rewind
+	end
 end
-
