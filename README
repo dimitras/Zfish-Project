@@ -5,22 +5,16 @@
 # STEP 1: clean the raw db files
 ruby scripts/clean_files.rb data/mrnas_ucsc_lineformat.txt data/proteins_ucsc_db.fa data/danRer7.fa results/mrnas_ucsc_lineformat_clean.txt results/proteins_ucsc_db_clean.fa
 
-# STEP 2: (after running mascot for annotated) get the peptides from dat
-ruby scripts/get_mascot_peptides.rb data/1d-16dec-zfish-ucsc-db.dat > results/mascot_peptides.txt
+# STEP 2: (after running mascot for annotated) find unannotated proteins
+ruby scripts/find_unannotated_proteins.rb results/mrnas_ucsc_lineformat_clean.txt data/1d-16dec-zfish-ucsc-db.dat results/proteins_ucsc_db_clean.fa data/junctions_high-quality.bed data/danRer7.fa results/peptides.bed results/mrnas_unannotated.bed results/mrnas_unannotated_seqs.fa results/mrnas_unannotated_lineformat.txt results/proteins_unannotated.fa
 
-# STEP 3: find unannotated proteins
-ruby scripts/find_unannotated_proteins.rb results/mrnas_ucsc_lineformat_clean.txt results/mascot_peptides.txt results/proteins_ucsc_db_clean.fa data/junctions_high-quality.bed data/danRer7.fa results/peptides.bed results/mrnas_unannotated.bed results/mrnas_unannotated_seqs.fa results/mrnas_unannotated_lineformat.txt results/proteins_unannotated.fa
+# STEP 3: (after running mascot for unannotated) create bed file with the peptides of the unannotated proteins
+ruby scripts/peptides_to_bed.rb results/mrnas_unannotated_lineformat.txt data/1d-16dec-zfish-unannotated-db.dat results/proteins_unannotated.fa results/peptides_on_unannotated_proteins.bed
 
-# STEP 4: (after running mascot for unannotated) get the peptides of the unannotated proteins from dat
-ruby scripts/get_mascot_peptides.rb data/1d-16dec-zfish-unannotated-db.dat > results/mascot_peptides_of_unannotated_proteins.txt
-
-# STEP 5: create bed file with the peptides of the unannotated proteins
-ruby scripts/peptides_to_bed.rb results/mrnas_unannotated_lineformat.txt results/mascot_peptides_of_unannotated_proteins.txt results/proteins_unannotated.fa results/peptides_on_unannotated_proteins.bed
-
-# STEP 6: (after running mascot for joined) join the db files (mrnas_lineformat and proteins)
+# STEP 4: (after running mascot for joined) join the db files (mrnas_lineformat and proteins)
 cat results/mrnas_ucsc_lineformat_clean.txt > results/mrnas_full_db_lineformat.txt
 grep -v "#" results/mrnas_unannotated_lineformat.txt >> results/mrnas_full_db_lineformat.txt
 cat results/proteins_ucsc_db_clean.fa results/proteins_unannotated.fa >> results/proteins_full_db.fa
 
-# STEP 7: find unexplained peptides with evidence
+# STEP 5: find unexplained peptides with evidence
 ruby scripts/find_unexplained_peptides.rb data/1d-16dec-zfish-full-db.dat results/mrnas_full_db_lineformat.txt results/unexplained_peptides_of_unannotated_proteins.bed results/unique_peptides_of_unannotated_proteins.bed results/nonunique_peptides_of_unannotated_proteins.bed
