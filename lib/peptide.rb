@@ -1,7 +1,7 @@
 require 'mrna'
 
 class Peptide
-	attr_accessor :prot_acc, :peptide, :start, :stop, :multiplicity, :score, :mrna, :genomic_starts, :genomic_stops
+	attr_accessor :prot_acc, :peptide, :start, :stop, :multiplicity, :score, :mrna
 
 	def initialize(prot_acc, peptide, start, stop, multiplicity, score)
 		@prot_acc = prot_acc.to_s
@@ -9,7 +9,7 @@ class Peptide
 		@start = start.to_i
 		@stop = stop.to_i
 		@multiplicity = multiplicity.to_i
-		@score = score
+		@score = score.to_f
 		@mrna = nil
 		@genomic_start = nil
 		@genomic_stop = nil
@@ -20,18 +20,24 @@ class Peptide
 	def length()
 		return @stop - @start + 1
 	end
-
-	def genomic_locations()
-		if self.genomic_starts.length == 0 && self.genomic_stops.length == 0 then
-			find_genomic_locations()
+	
+	def genomic_starts
+		if @genomic_starts.length == 0
+			find_genomic_locations
 		end
-		return self.genomic_starts, self.genomic_stops
+		return @genomic_starts
 	end
 
+	def genomic_stops
+		if @genomic_stops.length == 0
+			find_genomic_locations
+		end
+		return @genomic_stops
+	end
+	
 	def find_genomic_locations()
-		# puts "mrna is " + self.mrna.name.to_s
 		if self.mrna != nil
-			(@genomic_starts, @genomic_stops) = cut_regions_within(self.mrna.cds_exon_starts,self.mrna.cds_exon_stops,self.genomic_start,self.genomic_stop)
+			(@genomic_starts, @genomic_stops) = cut_regions_within(self.mrna.cds_exon_starts, self.mrna.cds_exon_stops, self.genomic_start, self.genomic_stop)
 		end
 	end
 	
@@ -125,8 +131,9 @@ class Peptide
 	end
 
 	def to_bed()
-		(starts,stops) = genomic_locations()
-# 		puts self.inspect
+		starts = self.genomic_starts
+		stops = self.genomic_stops
+		
 		rgb = "0,255,0"
 		exon_lengths = []
 		relative_starts = []
@@ -141,5 +148,6 @@ class Peptide
 		bed_entry = [self.mrna.chrom, starts.first, stops.last + 1, self.prot_acc.split("|")[0].to_s + "|" + self.peptide.to_s, self.score, self.mrna.strand, starts.first, stops.last + 1, rgb, starts.count, exon_lengths.join(","), relative_starts.join(",")].join("\t")
 		return bed_entry
 	end
+	
 
 end

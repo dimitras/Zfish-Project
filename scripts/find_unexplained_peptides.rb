@@ -4,11 +4,8 @@
 
 $LOAD_PATH << './lib'
 
-require 'rubygems'
-require 'mascot/dat'
-require 'mascot/dat/peptides'
-require 'mascot/dat/psm'
 require 'peptide'
+require 'peptide_parser'
 require 'mrna_parser'
 
 
@@ -18,67 +15,52 @@ unexplained_peptides_of_unannotated_proteins_bed_file = ARGV[2]
 unique_peptides_of_unannotated_proteins_bed_file = ARGV[3]
 multiple_peptides_of_unannotated_proteins_bed_file = ARGV[4]
 
-@full_db_dat = Mascot::DAT.open(full_db_dat_file, true)
+full_db_dat = PeptideParser.open(full_db_dat_file)
 mrnas_lineformat_mrnap = MrnaParser.open(mrnas_lineformat_file)
 
-@peptides = @full_db_dat.peptides
 stronger_pep_for_unann = {}
 max_score_for_ann = {}
-peptide_times_found = {}
+peptide_times_found = Hash.new { |h,k| h[k] = 0 }
+# peptide_protein_combination = Hash.new { |h,k| h[k] = 0 }
 
-
-@peptides.each do |psm|
-	peptide_times_found[psm.pep] = 0
-	psm.proteins.each do |protein_info|
-		protein_accno = protein_info[0]
-		start = protein_info[2]
-		stop = protein_info[3]
-		multiplicity = protein_info[4]
-		protein_is_annotated = true
-		
-		if protein_accno.split("-")[3] == 'unann'
-			protein_is_annotated = false
+full_db_dat.each do |peptide|
+	protein_is_annotated = true
+	
+	if peptide.prot_acc.split("-")[3] == 'unann'
+		protein_is_annotated = false
+	end
+	
+	if protein_is_annotated
+		if !max_score_for_ann.has_key?(peptide.peptide) || (peptide.score > max_score_for_ann[peptide.peptide])
+			max_score_for_ann[peptide.peptide] = peptide.score
 		end
-		
-		if protein_is_annotated
-			if !max_score_for_ann.has_key?(psm.pep) || (psm.score > max_score_for_ann[psm.pep])
-				max_score_for_ann[psm.pep] = psm.score
-			end
-		else
-			peptide_times_found[psm.pep] += 1
-			if !stronger_pep_for_unann.has_key?(protein_accno) || (psm.score > stronger_pep_for_unann[protein_accno].score)
-				peptide = Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score)
-				peptide.mrna = mrnas_lineformat_mrnap.mrna_by_prot_accno(peptide.prot_acc)
-				stronger_pep_for_unann[protein_accno] = peptide
-			end
+	else
+		peptide_times_found[peptide.peptide] += 1 # pos na kano loop gia kathe protein? thelo na vro oles tis proteines pou paratireitai to peptidio
+		if !stronger_pep_for_unann.has_key?(peptide.prot_acc) || (peptide.score > stronger_pep_for_unann[peptide.prot_acc].score)
+			peptide.mrna = mrnas_lineformat_mrnap.mrna_by_prot_accno(peptide.prot_acc)
+			stronger_pep_for_unann[peptide.prot_acc] = peptide
 		end
 	end
 end
-
+full_db_dat.rewind
 
 unique_peps_for_unann_bed_output = File.open(unique_peptides_of_unannotated_proteins_bed_file,"w")
 nonunique_peps_for_unann_bed_output = File.open(multiple_peptides_of_unannotated_proteins_bed_file,"w")
-@peptides.rewind
-@peptides.each do |psm|
-	psm.proteins.each do |protein_info|
-		protein_accno = protein_info[0]
-		start = protein_info[2]
-		stop = protein_info[3]
-		multiplicity = protein_info[4]
-		protein_is_annotated = true
-		
-		if protein_accno.split("-")[3] == 'unann'
-			protein_is_annotated = false
-		end
-		
-		if protein_is_annotated == false
-			peptide = Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score)
-			peptide.mrna = mrnas_lineformat_mrnap.mrna_by_prot_accno(peptide.prot_acc)
-			if peptide_times_found[psm.pep] == 1
-				unique_peps_for_unann_bed_output.puts peptide.to_bed
-			else
-				nonunique_peps_for_unann_bed_output.puts peptide.to_bed
-			end
+unique_peps_for_unann_bed_output.puts "track name=\"Unique Peptides on Unannotated Proteins\" description=\"Unique Peptides on Unannotated Proteins\" visibility=2 itemRgb=\"On\" useScore=1"
+nonunique_peps_for_unann_bed_output.puts "track name=\"Non-Unique Peptides on Unannotated Proteins\" description=\"Non-Unique Peptides on Unannotated Proteins\" visibility=2 itemRgb=\"On\" useScore=1"
+
+full_db_dat.each do |peptide|
+	protein_is_annotated = true
+	if peptide.prot_acc.split("-")[3] == 'unann'
+		protein_is_annotated = false
+	end
+	
+	if protein_is_annotated == false
+		peptide.mrna = mrnas_lineformat_mrnap.mrna_by_prot_accno(peptide.prot_acc)
+		if peptide_times_found[peptide.peptide] == 1
+			unique_peps_for_unann_bed_output.puts peptide.to_bed
+		else
+			nonunique_peps_for_unann_bed_output.puts peptide.to_bed
 		end
 	end
 end
@@ -87,14 +69,13 @@ nonunique_peps_for_unann_bed_output.close
 
 
 unexplained_peptides_bed_output = File.open(unexplained_peptides_of_unannotated_proteins_bed_file,"w")
+unexplained_peptides_bed_output.puts "track name=\"Unexplained highest-scored Peptides on Unannotated Proteins\" description=\"Unexplained highest-scored Peptides on Unannotated Proteins\" visibility=2 itemRgb=\"On\" useScore=1"
 stronger_pep_for_unann.each_value do |peptide|
-	if !max_score_for_ann.has_key?(peptide) || (max_score_for_ann[peptide] < peptide.score)
-		unexplained_peptides_bed_output.puts peptide.to_bed
+	if !max_score_for_ann.has_key?(peptide.peptide) || (max_score_for_ann[peptide.peptide] < peptide.score)
+		if peptide.genomic_starts.length >= 2
+			unexplained_peptides_bed_output.puts peptide.to_bed
+		end
 	end	
 end
 unexplained_peptides_bed_output.close
-
-
-
-
 

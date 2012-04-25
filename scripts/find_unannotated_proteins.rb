@@ -1,4 +1,4 @@
-# USAGE: ruby scripts/find_unannotated_proteins.rb data/mrnas_ucsc_lineformat.txt results/mascot_peptides.txt data/proteins_ucsc_db.fa data/junctions_high-quality.bed data/danRer7.fa results/peptides.bed results/mrnas_unannotated.bed results/mrnas_unannotated_seqs.fa results/mrnas_unannotated_lineformat.txt results/proteins_unannotated.fa results/ucsc_mrnas_lineformat_cleanedup.txt
+# USAGE: ruby scripts/find_unannotated_proteins.rb results/mrnas_ucsc_lineformat_clean.txt data/1d-16dec-zfish-ucsc-db.dat results/proteins_ucsc_db_clean.fa data/junctions_high-quality.bed data/danRer7.fa results/peptides.bed results/mrnas_unannotated.bed results/mrnas_unannotated_seqs.fa results/mrnas_unannotated_lineformat.txt results/proteins_unannotated.fa
 
 #!/usr/bin/env ruby
 
@@ -12,9 +12,13 @@ require 'fap'
 require 'junction'
 require 'bed_parser'
 require 'track'
-require 'rubygems'
-require 'bio'
 require 'genome_fap'
+require 'rubygems'
+require 'mascot/dat'
+require 'mascot/dat/peptides'
+require 'mascot/dat/psm'
+require 'bio'
+
 
 
 # Input files
