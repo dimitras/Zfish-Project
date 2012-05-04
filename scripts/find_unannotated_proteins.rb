@@ -86,7 +86,7 @@ rum_junctions_hq_bedp.each do |junction|
 	overlapping_mrnas.each do |mrna|
 		junction_start_exon_idx = mrna.exon_index(junction.start)
 		junction_stop_exon_idx = mrna.exon_index(junction.stop)
-		if junction_start_exon_idx != nil && junction_stop_exon_idx != nil && (junction_stop_exon_idx - junction_start_exon_idx) == 1
+		if junction_start_exon_idx != nil && junction_stop_exon_idx != nil && (junction_stop_exon_idx - junction_start_exon_idx) <= 1
 # 			puts "Junction is annotated"
 			annotated = true
 			break

@@ -1,15 +1,17 @@
 require 'mrna'
 
 class Peptide
-	attr_accessor :prot_acc, :peptide, :start, :stop, :multiplicity, :score, :mrna
+	attr_accessor :prot_acc, :peptide, :start, :stop, :multiplicity, :score, :query, :rank, :mrna
 
-	def initialize(prot_acc, peptide, start, stop, multiplicity, score)
+	def initialize(prot_acc, peptide, start, stop, multiplicity, score, query, rank)
 		@prot_acc = prot_acc.to_s
 		@peptide = peptide.to_s
 		@start = start.to_i
 		@stop = stop.to_i
 		@multiplicity = multiplicity.to_i
 		@score = score.to_f
+		@query = query
+		@rank = rank
 		@mrna = nil
 		@genomic_start = nil
 		@genomic_stop = nil
@@ -17,6 +19,18 @@ class Peptide
 		@genomic_stops = []
 	end
 
+	def chrom
+		if self.mrna != nil
+			return self.mrna.chrom
+		end
+	end
+
+	def strand
+		if self.mrna != nil
+			return self.mrna.strand
+		end
+	end
+	
 	def length()
 		return @stop - @start + 1
 	end
@@ -145,9 +159,8 @@ class Peptide
 			relative_starts << starts[i] - starts.first
 		end	
 
-		bed_entry = [self.mrna.chrom, starts.first, stops.last + 1, self.prot_acc.split("|")[0].to_s + "|" + self.peptide.to_s, self.score, self.mrna.strand, starts.first, stops.last + 1, rgb, starts.count, exon_lengths.join(","), relative_starts.join(",")].join("\t")
+		bed_entry = [self.mrna.chrom, starts.first, stops.last + 1, self.prot_acc.split("|")[0].to_s + "|" + self.peptide.to_s + "|" + self.query.to_s, self.score, self.mrna.strand, starts.first, stops.last + 1, rgb, starts.count, exon_lengths.join(","), relative_starts.join(",")].join("\t")
 		return bed_entry
 	end
 	
-
 end

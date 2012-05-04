@@ -33,7 +33,7 @@ class PeptideParser
 				start = protein_info[2]
 				stop = protein_info[3]
 				multiplicity = protein_info[4]
-				yield Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score)
+				yield Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score, psm.query, psm.rank)
 			end
 		end
 	end
@@ -45,7 +45,7 @@ class PeptideParser
 				start = protein_info[2]
 				stop = protein_info[3]
 				multiplicity = protein_info[4]
-				peptide = Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score)
+				peptide = Peptide.new(protein_accno, psm.pep, start-1, stop-1, multiplicity, psm.score, psm.query, psm.rank)
 				@index[protein_accno] = peptide
 			end
 		end
