@@ -61,6 +61,7 @@ ruby scripts/find_unexplained_peptides.rb data/1d-30oct-zfish-full-db.dat result
 
 ## TODO list
 - review the peptide candidates
+- add more unit tests
 - run all datasets
 - TPP for data validation
 - visualization of genomic annotation information with DAS
