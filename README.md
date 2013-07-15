@@ -40,8 +40,6 @@ ruby scripts/clean_files.rb data/mrnas_ucsc_lineformat.txt data/proteins_ucsc_db
 
 - find unannotated proteins
 ruby scripts/find_unannotated_proteins.rb results/mrnas_ucsc_lineformat_clean.txt data/1d-30oct-zfish-ucsc-db.dat results/proteins_ucsc_db_clean.fa data/junctions_high-quality.bed data/danRer7.fa results/1d-30oct/peptides-1d-30oct.bed results/1d-30oct/mrnas_unannotated.bed results/1d-30oct/mrnas_unannotated_seqs.fa results/1d-30oct/mrnas_unannotated_lineformat.txt results/1d-30oct/proteins_unannotated.fa
-or
-ruby scripts/find_unannotated_proteins.rb results/mrnas_ucsc_lineformat_clean_.txt data/1d-16dec-zfish-ucsc-db.dat results/proteins_ucsc_db_clean_.fa data/junctions_high-quality.bed data/danRer7.fa results/1d-16dec_/peptides-1d-16dec_.bed results/1d-16dec_/mrnas_unannotated_.bed results/1d-16dec_/mrnas_unannotated_seqs_.fa results/1d-16dec_/mrnas_unannotated_lineformat_.txt results/1d-16dec_/proteins_unannotated_.fa
 
 - run mascot for unannotated db 
 
