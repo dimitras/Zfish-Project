@@ -1,7 +1,7 @@
 # Alternative mRNA transcripts in Zebrafish
 
 ## Aim
-To discover novel gene models that haven’t been annotated yet.
+To discover novel gene models that haven’t been annotated yet
 
 ## Solution
 - combine RNA-Seq, alternative splicing and proteomics 
